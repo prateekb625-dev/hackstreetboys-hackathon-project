@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseAI - Live Clinical Intelligence Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- ===================== CSS ===================== -->
+<style>
+  /* Component styles (plain CSS, no @apply) */
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:1.5rem;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1)}
+  .dark .card{background:rgba(15,23,42,.8);border-color:#1e293b}
+  .stat{background:#fff;border:1px solid #e2e8f0;padding:1.25rem;border-radius:1rem;box-shadow:0 10px 15px -3px rgba(0,0,0,.1)}
+  .dark .stat{background:rgba(15,23,42,.6);border-color:rgba(30,41,59,.8)}
+  .btn{background:#14b8a6;color:#020617;font-weight:700;border-radius:1rem;font-size:.875rem;line-height:1.25rem;transition:background .15s;box-shadow:0 10px 15px -3px rgba(20,184,166,.2)}
+  .btn:hover{background:#2dd4bf}
+  .btn:disabled{cursor:not-allowed}
+  .btn-ghost{background:#f1f5f9;color:#334155;border-radius:.75rem;transition:background .15s}
+  .btn-ghost:hover{background:#e2e8f0}
+  .dark .btn-ghost{background:#1e293b;color:#cbd5e1}
+  .dark .btn-ghost:hover{background:#334155}
+  .inp{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:.875rem 1.25rem;flex-grow:1;min-width:0;font-size:.875rem;outline:none}
+  .inp:focus{border-color:#14b8a6}
+  .dark .inp{background:#0f172a;border-color:#1e293b}
+  .h1{font-size:1.5rem;line-height:2rem;font-weight:700;letter-spacing:-.025em;color:#0f172a;margin-bottom:.25rem}
+  .dark .h1{color:#fff}
+  .sub{font-size:.875rem;color:#64748b}
+  .dark .sub{color:#94a3b8}
+  .tag{font-size:10px;font-weight:600;padding:.125rem .625rem;border-radius:9999px;border:1px solid transparent}
+  .nav-btn{width:100%;display:flex;align-items:center;gap:.75rem;padding:.625rem .875rem;border-radius:.75rem;font-size:.875rem;font-weight:500;color:#475569;border:1px solid transparent;transition:background .15s;text-align:left}
+  .nav-btn:hover{background:#f1f5f9}
+  .dark .nav-btn{color:#94a3b8}
+  .dark .nav-btn:hover{background:rgba(30,41,59,.6)}
+  .nav-btn i{width:1.25rem;color:#94a3b8}
+  .dark .nav-btn i{color:#64748b}
+  .nav-btn.on{color:#0d9488;background:#f0fdfa;border-color:#99f6e4}
+  .dark .nav-btn.on{color:#2dd4bf;background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.2)}
+  .nav-btn.on i,.dark .nav-btn.on i{color:#14b8a6}
+  .pill{padding:.625rem 1rem;border-radius:.75rem;font-size:.75rem;background:#fff;color:#334155;border:1px solid #e2e8f0;transition:background .15s}
+  .pill:hover{background:#f1f5f9}
+  .dark .pill{background:#0f172a;color:#cbd5e1;border-color:#1e293b}
+  .dark .pill:hover{background:#1e293b}
+  .pill.on,.dark .pill.on{background:#14b8a6;color:#020617;font-weight:600;border-color:#14b8a6}
+  .profile-btn{padding:.875rem;border-radius:1rem;cursor:pointer;border:1px solid #e2e8f0;background:#f8fafc;transition:background .15s}
+  .dark .profile-btn{background:#020617;border-color:#1e293b}
+  .profile-btn .t{font-weight:700;font-size:.875rem;color:#1e293b}
+  .dark .profile-btn .t{color:#fff}
+  .profile-btn.on{background:#f0fdfa;border-color:#99f6e4}
+  .dark .profile-btn.on{background:rgba(20,184,166,.1);border-color:rgba(20,184,166,.3)}
+  .profile-btn.on .t{color:#0f766e}
+  .dark .profile-btn.on .t{color:#5eead4}
+  .doc{padding:.875rem;background:#f8fafc;border-radius:1rem;cursor:pointer;border:1px solid #e2e8f0;transition:background .15s}
+  .doc:hover{background:#f1f5f9}
+  .dark .doc{background:#020617;border-color:rgba(30,41,59,.8)}
+  .dark .doc:hover{background:rgba(30,41,59,.8)}
+  .box{padding:1rem;background:#f1f5f9;border-radius:1rem;border:1px solid #e2e8f0}
+  .dark .box{background:rgba(2,6,23,.8);border-color:#1e293b}
+  /* Chatbot extras */
+  .pa-dots span{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:#14b8a6;animation:paBounce 1.2s infinite ease-in-out}
+  .pa-dots span:nth-child(2){animation-delay:.15s}.pa-dots span:nth-child(3){animation-delay:.3s}
+  @keyframes paBounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
+  .pa-msg ul{list-style:disc;padding-left:1.1rem;margin:.35rem 0}
+  .pa-msg p{margin:.35rem 0}.pa-msg p:first-child{margin-top:0}.pa-msg p:last-child{margin-bottom:0}
+  .pa-chip{white-space:nowrap}
+</style>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans min-h-screen flex selection:bg-teal-500 selection:text-slate-950 transition-colors duration-200">
+
+<!-- ===================== SIDEBAR ===================== -->
+<aside class="w-72 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800/80 hidden md:flex flex-col justify-between sticky top-0 h-screen p-5 shadow-2xl z-30">
+  <div>
+    <div class="flex items-center gap-3 px-2 py-3 mb-6">
+      <div class="bg-gradient-to-tr from-teal-500 to-emerald-400 p-2.5 rounded-2xl text-slate-950 shadow-lg shadow-teal-500/20"><i class="fa-solid fa-heart-pulse text-xl"></i></div>
+      <div>
+        <span class="text-lg font-bold tracking-tight block">Pulse<span class="text-teal-500">AI</span></span>
+        <span class="text-[10px] text-teal-600 dark:text-teal-400/80 uppercase tracking-widest font-semibold">Clinical Suite</span>
+      </div>
+    </div>
+    <nav class="space-y-1">
+      <button class="nav-btn on" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fa-solid fa-chart-pie"></i> Command Center</button>
+      <button class="nav-btn" data-tab="chat" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i> AI Age-Group Chat</button>
+      <button class="nav-btn" data-tab="report" onclick="switchTab('report')"><i class="fa-solid fa-file-medical"></i> Report & Script Reader</button>
+      <button class="nav-btn" data-tab="symptom" onclick="switchTab('symptom')"><i class="fa-solid fa-stethoscope"></i> Symptom Triage</button>
+      <button class="nav-btn" data-tab="medicines" onclick="switchTab('medicines')"><i class="fa-solid fa-pills"></i> Medicine Lookup</button>
+      <button class="nav-btn" data-tab="exercises" onclick="switchTab('exercises')"><i class="fa-solid fa-dumbbell"></i> AI Therapy Exercises</button>
+      <button class="nav-btn" data-tab="hospitals" onclick="switchTab('hospitals')"><i class="fa-solid fa-hospital"></i> Nearby Facilities</button>
+      <button class="nav-btn" data-tab="telehealth" onclick="switchTab('telehealth')"><i class="fa-solid fa-video"></i> 1-on-1 Doctor Video</button>
+      <button class="nav-btn" data-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i> Platform Settings</button>
+    </nav>
+  </div>
+  <div class="space-y-3">
+    <button onclick="toggleTheme()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-800 transition">
+      <span class="flex items-center gap-2"><i id="themeIcon" class="fa-solid fa-moon text-teal-500"></i> Mode Switch</span>
+      <span id="themeLabel" class="text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Dark</span>
+    </button>
+    <div onclick="triggerSOS()" class="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl cursor-pointer hover:bg-rose-500/20 transition text-center">
+      <div class="flex items-center justify-center gap-2 text-xs text-rose-600 dark:text-rose-400 font-bold mb-0.5"><i class="fa-solid fa-triangle-exclamation animate-bounce"></i> EMERGENCY SOS</div>
+      <p class="text-[10px] text-slate-500 dark:text-slate-400">Instant dispatch & triage alert</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ===================== MAIN ===================== -->
+<div class="flex-1 flex flex-col min-w-0">
+
+  <!-- Mobile header -->
+  <header class="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-40">
+    <span class="font-bold text-lg">Pulse<span class="text-teal-500">AI</span></span>
+    <div class="flex items-center gap-1 text-xs overflow-x-auto">
+      <button onclick="toggleTheme()" class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg"><i id="mobileThemeIcon" class="fa-solid fa-moon"></i></button>
+      <button onclick="switchTab('dashboard')" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">Home</button>
+      <button onclick="switchTab('chat')" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">Chat</button>
+      <button onclick="switchTab('report')" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">Reports</button>
+      <button onclick="switchTab('symptom')" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">Triage</button>
+      <button onclick="switchTab('medicines')" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">Meds</button>
+      <button onclick="switchTab('settings')" class="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">Settings</button>
+    </div>
+  </header>
+
+  <main class="p-4 md:p-8 max-w-7xl w-full mx-auto">
+
+    <!-- ========== DASHBOARD ========== -->
+    <section id="tab-dashboard" class="tab-content space-y-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-teal-500/10 via-slate-100 to-slate-100 dark:from-teal-950/40 dark:via-slate-900 dark:to-slate-900 border border-teal-500/20 p-8 rounded-3xl shadow-xl">
+        <div>
+          <span class="text-xs bg-teal-500/10 text-teal-600 dark:text-teal-300 px-3 py-1 rounded-full border border-teal-500/20 font-semibold uppercase tracking-wider">Clinical Intelligence Engine Active</span>
+          <h1 class="text-3xl font-extrabold mt-2 tracking-tight">AI Health Command Center</h1>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Instant OCR report processing, adaptive age-group chat, and emergency response routing.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="switchTab('chat')" class="btn px-5 py-3 flex items-center gap-2"><i class="fa-solid fa-comments"></i> Launch AI Chat</button>
+          <button onclick="triggerSOS()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-3 rounded-2xl transition shadow-lg shadow-rose-600/20 text-sm flex items-center gap-2"><i class="fa-solid fa-phone-volume"></i> Emergency SOS</button>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-200/60 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-2xl flex justify-between items-center text-xs">
+        <div class="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+          <span id="apiDot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+          <span><strong>Mode:</strong> <span id="apiModeText"></span></span>
+        </div>
+        <button onclick="switchTab('settings')" class="text-teal-600 dark:text-teal-400 font-bold hover:underline">Configure Key →</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat"><span class="text-xs text-slate-500 dark:text-slate-400 font-medium">AI Chats Processed</span><div class="text-2xl font-bold mt-2">12,480</div><span class="text-[11px] text-teal-600 dark:text-teal-400 mt-1 block font-medium">Pediatric, Adult & Senior modes</span></div>
+        <div class="stat"><span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Scans & Reports Decoded</span><div class="text-2xl font-bold mt-2">2,150</div><span class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-medium">↑ 18% from last hour</span></div>
+        <div class="stat"><span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Generic Cost Savings</span><div class="text-2xl font-bold mt-2">$54,120</div><span class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-medium">Avg. 56% cost reduction</span></div>
+        <div class="stat"><span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Verified Facilities</span><div class="text-2xl font-bold mt-2">28 Active</div><span class="text-[11px] text-sky-600 dark:text-sky-400 mt-1 block font-medium">Public & Private facilities</span></div>
+      </div>
+    </section>
+
+    <!-- ========== CHAT ========== -->
+    <section id="tab-chat" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">Age-Group Adaptive AI Health Assistant</h1>
+        <p class="sub">Select the patient demographic to adjust the AI's tone, terminology, and clarity. Each profile keeps its own conversation.</p>
+      </div>
+      <div class="grid md:grid-cols-4 gap-6">
+        <div class="card p-5 space-y-4 h-fit">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-slate-400">Select Age Profile</h3>
+          <div class="profile-btn on" data-profile="pediatric" onclick="setAgeProfile('pediatric')"><div class="t">👶 Pediatric / Parent</div><div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Child & infant health care tips</div></div>
+          <div class="profile-btn" data-profile="adult" onclick="setAgeProfile('adult')"><div class="t">🧑 Adult & Workplace</div><div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Clinical metrics & fitness advice</div></div>
+          <div class="profile-btn" data-profile="senior" onclick="setAgeProfile('senior')"><div class="t">👴 Senior / Geriatric</div><div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Simplified text & clear instructions</div></div>
+        </div>
+
+        <div class="md:col-span-3 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl flex flex-col h-[600px] shadow-2xl overflow-hidden">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span id="activeProfileTitle" class="font-bold text-sm">Active Profile: Pediatric / Parent Mode</span>
+            </div>
+            <span class="text-xs text-teal-600 dark:text-teal-400 font-semibold" id="chatEngineBadge">Simulation Ready</span>
+          </div>
+          <div id="chatMessages" class="flex-1 p-6 overflow-y-auto space-y-4 text-sm"></div>
+          <div id="paChips" class="px-4 py-2 flex gap-2 overflow-x-auto border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950"></div>
+          <div class="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-3" id="chatInputRow">
+            <input type="text" id="chatInput" placeholder="Ask a pediatric care question..." class="inp">
+            <button id="paMic" title="Speak your question" class="hidden bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-teal-500 px-4 rounded-2xl text-sm"><i class="fa-solid fa-microphone"></i></button>
+            <button id="paClear" title="New conversation" class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-rose-500 px-4 rounded-2xl text-sm"><i class="fa-solid fa-broom"></i></button>
+            <button id="paSend" class="btn px-6 py-3">Send</button>
+            <p class="w-full text-[10px] text-center text-slate-400 -mb-1">PulseAI gives general health information, not a diagnosis. In an emergency call your local emergency number.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== REPORT READER ========== -->
+    <section id="tab-report" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">AI Medical Report & Prescription Reader</h1>
+        <p class="sub">Upload doctor prescriptions or blood test summaries to decode medical terms instantly.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-slate-900/80 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-teal-500 rounded-3xl p-8 flex flex-col justify-center items-center text-center shadow-xl transition group">
+          <div class="w-20 h-20 bg-teal-500/10 rounded-3xl flex items-center justify-center text-teal-500 text-3xl mb-4 border border-teal-500/20 group-hover:scale-105 transition"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <h3 class="font-bold text-base mb-1">Upload Medical Document</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">Supports doctor handwriting snapshots & lab reports</p>
+          <input type="file" id="fileInput" class="hidden" onchange="processReportUpload(event)">
+          <label for="fileInput" class="btn px-8 py-3 cursor-pointer flex items-center gap-2"><i class="fa-solid fa-folder-open"></i> Browse Files</label>
+          <div id="fileNameDisplay" class="text-xs text-teal-600 dark:text-teal-400 mt-3 font-semibold hidden"></div>
+          <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800/80 w-full flex justify-center gap-3">
+            <button onclick="demoReport('prescription')" class="btn-ghost text-xs px-4 py-2.5 border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 font-medium"><i class="fa-solid fa-prescription text-teal-500"></i> Sample Prescription</button>
+            <button onclick="demoReport('blood')" class="btn-ghost text-xs px-4 py-2.5 border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 font-medium"><i class="fa-solid fa-vial text-teal-500"></i> Sample Blood Report</button>
+          </div>
+        </div>
+        <div id="reportResult" class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 hidden shadow-xl flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 class="font-bold text-base text-teal-600 dark:text-teal-400 flex items-center gap-2"><i class="fa-solid fa-notes-medical"></i> <span id="reportTitle">Summary Output</span></h3>
+              <span class="tag bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Demo Output</span>
+            </div>
+            <div class="space-y-3.5 text-sm text-slate-700 dark:text-slate-300" id="reportContent"></div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+            <span><i class="fa-solid fa-shield-halved text-teal-500 mr-1"></i> Always confirm with your doctor</span>
+            <button onclick="speakText(document.getElementById('reportContent').innerText)" class="text-teal-600 dark:text-teal-400 font-semibold hover:underline flex items-center gap-1"><i class="fa-solid fa-volume-high"></i> Listen Readout</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SYMPTOM TRIAGE ========== -->
+    <section id="tab-symptom" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">Interactive Symptom Triage & Urgency Checker</h1>
+        <p class="sub">Select a common symptom or type custom symptoms to calculate triage severity.</p>
+      </div>
+      <div class="flex gap-3 max-w-2xl">
+        <input type="text" id="symptomInput" onkeydown="if(event.key==='Enter')analyzeCustomSymptom()" placeholder="Describe symptoms (e.g., 'dizziness with high fever for 2 days')..." class="inp shadow-inner">
+        <button onclick="analyzeCustomSymptom()" class="btn px-8 py-3.5">Analyze</button>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div onclick="checkSymptom('chest')" class="card p-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition group">
+          <span class="tag bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20">High Urgency</span>
+          <h4 class="font-bold text-base mt-2 group-hover:text-teal-500 transition">Chest Tightness & Breathlessness</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Evaluates acute cardiac or lung signs.</p>
+        </div>
+        <div onclick="checkSymptom('migraine')" class="card p-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition group">
+          <span class="tag bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">Moderate Urgency</span>
+          <h4 class="font-bold text-base mt-2 group-hover:text-teal-500 transition">Throbbing Migraine & Nausea</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Evaluates severe headache indicators.</p>
+        </div>
+        <div onclick="checkSymptom('joint')" class="card p-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition group">
+          <span class="tag bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Low Urgency</span>
+          <h4 class="font-bold text-base mt-2 group-hover:text-teal-500 transition">Lower Back or Knee Soreness</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Evaluates musculoskeletal strain.</p>
+        </div>
+      </div>
+      <div id="triageResult" class="card p-6 hidden">
+        <h3 id="triageTitle" class="font-bold text-base text-teal-600 dark:text-teal-400 mb-2">Triage Analysis</h3>
+        <p id="triageDesc" class="text-sm text-slate-700 dark:text-slate-300 mb-4"></p>
+        <div id="triageAction" class="box text-xs text-slate-600 dark:text-slate-400"></div>
+      </div>
+    </section>
+
+    <!-- ========== MEDICINES ========== -->
+    <section id="tab-medicines" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">Medicine & Generic Substitute Lookup</h1>
+        <p class="sub">Search a medication brand to see usage, typical dosage, and affordable alternatives. Informational only; follow your prescriber's instructions.</p>
+      </div>
+      <div class="flex gap-3 max-w-2xl">
+        <input type="text" id="medSearch" onkeydown="if(event.key==='Enter')searchMedicine()" placeholder="Type medicine name (e.g., Lipitor, Augmentin, Metformin)..." class="inp shadow-inner">
+        <button onclick="searchMedicine()" class="btn px-8 py-3.5">Search</button>
+      </div>
+      <div id="medResults" class="grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ========== EXERCISES ========== -->
+    <section id="tab-exercises" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">Targeted AI Recovery & Wellness Exercises</h1>
+        <p class="sub">Select physical concerns to access low-impact movements and posture routines.</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="filterExercise('back',this)" class="pill ex-btn on">Lower Back Pain</button>
+        <button onclick="filterExercise('posture',this)" class="pill ex-btn">Desk Posture Fix</button>
+        <button onclick="filterExercise('knee',this)" class="pill ex-btn">Knee Mobility</button>
+        <button onclick="filterExercise('neck',this)" class="pill ex-btn">Neck & Shoulder</button>
+      </div>
+      <div id="exerciseCards" class="grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ========== HOSPITALS ========== -->
+    <section id="tab-hospitals" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">Nearby Hospitals & Health Facilities</h1>
+        <p class="sub">Filter government medical centers, emergency rooms, and private clinics. (Sample data)</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="filterHospitals('all',this)" class="pill hosp-btn on">All Facilities</button>
+        <button onclick="filterHospitals('government',this)" class="pill hosp-btn">Government / Public</button>
+        <button onclick="filterHospitals('private',this)" class="pill hosp-btn">Private Hospitals</button>
+      </div>
+      <div id="hospitalList" class="grid md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ========== TELEHEALTH ========== -->
+    <section id="tab-telehealth" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">1-on-1 Telehealth Video Consultation</h1>
+        <p class="sub">Video link with available hospital specialists and physicians. (Demo: your camera preview only)</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="card p-5 space-y-3">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-slate-400 px-1">Available Doctors</h3>
+          <div onclick="startCall('Dr. Sarah Jenkins - Cardiologist')" class="doc group">
+            <div class="font-bold text-sm group-hover:text-teal-500 transition">Dr. Sarah Jenkins</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Cardiologist • City Care Hospital</div>
+            <span class="tag inline-block mt-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Online Now</span>
+          </div>
+          <div onclick="startCall('Dr. Rajesh Kumar - General Physician')" class="doc group">
+            <div class="font-bold text-sm group-hover:text-teal-500 transition">Dr. Rajesh Kumar</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">General Physician • Govt District Hospital</div>
+            <span class="tag inline-block mt-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">Online Now</span>
+          </div>
+        </div>
+        <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 flex flex-col items-center justify-center min-h-[420px] relative overflow-hidden shadow-2xl">
+          <div id="videoPlaceholder" class="text-center p-6">
+            <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center text-slate-400 text-3xl mx-auto mb-4 border border-slate-200 dark:border-slate-700"><i class="fa-solid fa-video-slash"></i></div>
+            <p class="font-bold text-base">Select a doctor to begin consultation</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Camera and microphone permission will be requested</p>
+          </div>
+          <video id="localVideo" class="hidden absolute bottom-6 right-6 w-40 h-32 bg-black rounded-2xl border-2 border-teal-500 object-cover shadow-2xl z-10" autoplay muted playsinline></video>
+          <div id="remoteStream" class="hidden text-center w-full h-full flex-col justify-center items-center bg-slate-100 dark:bg-slate-950/90 rounded-2xl">
+            <div class="w-24 h-24 bg-teal-500/20 rounded-full flex items-center justify-center text-teal-500 text-4xl mb-4 border border-teal-500/30 animate-pulse mx-auto"><i class="fa-solid fa-user-doctor"></i></div>
+            <p id="callingText" class="text-teal-600 dark:text-teal-400 font-bold text-sm tracking-wide"></p>
+            <button onclick="endCall()" class="mt-6 bg-rose-600 hover:bg-rose-500 text-white font-bold px-6 py-2.5 rounded-2xl text-xs"><i class="fa-solid fa-phone-slash mr-1"></i> End Call</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SETTINGS ========== -->
+    <section id="tab-settings" class="tab-content hidden space-y-6">
+      <div>
+        <h1 class="h1">Platform Settings & Intelligence API Config</h1>
+        <p class="sub">Configure your Gemini API key, voice readouts, and privacy controls.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 bg-teal-500/10 rounded-xl flex items-center justify-center text-teal-500 text-lg"><i class="fa-solid fa-key"></i></div>
+            <div><h3 class="font-bold text-base">Gemini API Key</h3><p class="text-xs text-slate-500 dark:text-slate-400">Power the app using live Gemini 2.5 Flash</p></div>
+          </div>
+          <div class="relative">
+            <input type="password" id="apiKeyInput" placeholder="Paste Gemini API Key (e.g., AIzaSy...)" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 font-mono pr-12">
+            <button onclick="toggleKeyVisibility()" class="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><i id="keyEyeIcon" class="fa-solid fa-eye"></i></button>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="saveApiKey()" class="btn px-5 py-2.5 text-xs">Save Key</button>
+            <button onclick="clearApiKey()" class="btn-ghost px-4 py-2.5 text-xs">Remove Key</button>
+          </div>
+          <p class="text-[11px] text-slate-400">Your key is stored in this browser's local storage and sent only to Google's Gemini API. Use a restricted key and avoid shared computers.</p>
+        </div>
+        <div class="card p-6 space-y-5">
+          <h3 class="font-bold text-base flex items-center gap-2"><i class="fa-solid fa-sliders text-teal-500"></i> Platform Preferences</h3>
+          <div class="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div><span class="font-semibold text-xs block">Auto-Voice Readout</span><span class="text-[11px] text-slate-500 dark:text-slate-400">Read AI responses aloud for accessibility</span></div>
+            <input type="checkbox" id="voiceToggle" class="w-5 h-5 accent-teal-500 cursor-pointer" onchange="toggleVoicePreference(this.checked)">
+          </div>
+          <div class="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <div><span class="font-semibold text-xs block">Clear Local Session Data</span><span class="text-[11px] text-slate-500 dark:text-slate-400">Delete saved chats and report history</span></div>
+            <button onclick="clearSessionData()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-bold px-3 py-1.5 rounded-xl text-xs transition">Reset</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+/* ---------- Helpers & state ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+  del: k => { try { localStorage.removeItem(k); } catch (e) {} }
+};
+let geminiApiKey = store.get('pulse_gemini_key') || '';
+let enableVoice = store.get('pulse_voice_enabled') === 'true';
+let currentAgeProfile = 'pediatric';
+
+function setOn(selector, el) { document.querySelectorAll(selector).forEach(b => b.classList.toggle('on', b === el)); }
+
+/* ---------- Theme ---------- */
+function toggleTheme() {
+  const dark = document.documentElement.classList.toggle('dark');
+  $('themeIcon').className = dark ? 'fa-solid fa-moon text-teal-500' : 'fa-solid fa-sun text-amber-500';
+  $('mobileThemeIcon').className = dark ? 'fa-solid fa-moon' : 'fa-solid fa-sun text-amber-500';
+  $('themeLabel').innerText = dark ? 'Dark' : 'Light';
+}
+
+/* ---------- Navigation ---------- */
+function switchTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  $('tab-' + id).classList.remove('hidden');
+  setOn('.nav-btn', document.querySelector(`.nav-btn[data-tab="${id}"]`));
+  window.scrollTo({ top: 0 });
+}
+
+/* ---------- Settings / API ---------- */
+function updateApiStatusUI() {
+  const live = !!geminiApiKey;
+  $('apiModeText').innerText = live ? 'Live Gemini API Active' : 'Smart Simulation (add your Gemini API key in Settings for live answers)';
+  $('apiDot').className = 'w-2.5 h-2.5 rounded-full animate-pulse ' + (live ? 'bg-emerald-500' : 'bg-amber-500');
+  $('chatEngineBadge').innerText = live ? 'Live Gemini 2.5 Active' : 'Simulation Ready';
+}
+function saveApiKey() {
+  const v = $('apiKeyInput').value.trim();
+  if (!v) return alert('Please enter a valid API key.');
+  geminiApiKey = v; store.set('pulse_gemini_key', v); updateApiStatusUI();
+  alert('✅ API key saved. The app is now using live Gemini models.');
+}
+function clearApiKey() {
+  geminiApiKey = ''; store.del('pulse_gemini_key'); $('apiKeyInput').value = ''; updateApiStatusUI();
+  alert('Key removed. Reverted to Simulation Mode.');
+}
+function toggleKeyVisibility() {
+  const i = $('apiKeyInput'), show = i.type === 'password';
+  i.type = show ? 'text' : 'password';
+  $('keyEyeIcon').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+}
+function toggleVoicePreference(v) { enableVoice = v; store.set('pulse_voice_enabled', v); }
+function speakText(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.rate = 0.95; speechSynthesis.speak(u);
+}
+function clearSessionData() {
+  if (!confirm('Clear all saved chats and cached reports?')) return;
+  Object.keys(PROFILES).forEach(p => store.del(KEY(p)));
+  history = []; renderChat(); alert('Session data cleared.');
+}
+function triggerSOS() {
+  alert('🚨 EMERGENCY\n\nThis demo cannot place real calls. Dial your local emergency number now (India: 112 or 108, US: 911, UK: 999).');
+}
+
+/* ---------- Gemini helper ---------- */
+async function gemini(contents, systemText, maxTokens = 700) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 25000);
+  try {
+    const body = { contents, generationConfig: { temperature: 0.6, maxOutputTokens: maxTokens } };
+    if (systemText) body.systemInstruction = { parts: [{ text: systemText }] };
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST', signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiApiKey },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || 'HTTP ' + res.status);
+    const out = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join('');
+    if (!out) throw new Error('The model returned no answer (it may have been blocked by safety filters).');
+    return out;
+  } finally { clearTimeout(timer); }
+}
+
+/* ===================== CHATBOT ===================== */
+const PROFILES = {
+  pediatric: {
+    label: 'Pediatric / Parent', short: 'pediatric care',
+    greet: "Hi! I'm your PulseAI companion in **Pediatric mode**. Ask me about fevers, feeding, rashes, vaccines or when to call the pediatrician.",
+    chips: ['Baby has a fever', 'When to worry about a cough?', 'Signs of dehydration in kids', 'Vaccine schedule basics'],
+    style: "The user is a parent or caregiver of an infant or child. Use warm, reassuring, plain language. Ask for or mention the child's age and weight when relevant. Never give a specific medicine dose without the child's weight and a pharmacist or doctor check. Clearly list red-flag signs that need a doctor today."
+  },
+  adult: {
+    label: 'Adult & Workplace', short: 'adult health',
+    greet: "Hello! I'm in **Adult mode**. Ask about symptoms, lab values, sleep, stress, nutrition or fitness.",
+    chips: ['Explain my cholesterol numbers', 'How to fix poor sleep', 'Persistent headaches at work', 'Beginner fitness plan'],
+    style: 'The user is a working-age adult. Be clear and direct, use correct medical terms with short explanations, give practical lifestyle steps, and state when to see a doctor.'
+  },
+  senior: {
+    label: 'Senior / Geriatric Care', short: 'senior care',
+    greet: "Hello! I'm in **Senior mode**. I'll keep my answers short and clear. Ask me about medicines, dizziness, sleep, or staying active.",
+    chips: ['I feel dizzy when I stand up', 'Tips to remember my medicines', 'Safe daily exercises', 'Preventing falls'],
+    style: 'The user is an older adult or their caregiver. Use short sentences, simple words, numbered steps and no jargon. Mention medication-interaction and fall-risk cautions where relevant, and encourage checking with their doctor before changing any medicine.'
+  }
+};
+const RED_FLAGS = /(chest pain|chest tight|can'?t breathe|cannot breathe|trouble breathing|difficulty breathing|shortness of breath|not breathing|blue lips|unconscious|passed out|seizure|stroke|face droop|slurred speech|severe bleeding|overdose|poison|suicid|kill myself|anaphyla)/i;
+const FALLBACK = [
+  [/fever|temperature/, 'Keep them hydrated and rested and track the temperature every 4–6 hours. Seek care promptly for a fever in a baby under 3 months, a fever above 39.5°C (103°F), a fever lasting more than 3 days, or if there is lethargy, stiff neck, or trouble breathing.'],
+  [/cough|cold|sore throat/, 'Most coughs and colds settle in 7–10 days. Fluids, rest and humid air help. See a doctor for breathing difficulty, wheezing, a cough lasting over 2–3 weeks, or high fever.'],
+  [/headache|migraine/, 'Rest in a quiet dark room, hydrate, and avoid screens. Get urgent care for a sudden "worst ever" headache, headache with confusion, weakness, fever with stiff neck, or after a head injury.'],
+  [/dizz|faint|vertigo/, 'Stand up slowly, drink enough fluids, and sit down when it starts. Seek care if dizziness comes with chest pain, weakness on one side, vision or speech changes, or fainting.'],
+  [/sleep|insomnia/, 'Keep a fixed sleep and wake time, avoid caffeine after noon, dim screens an hour before bed, and keep the room cool and dark. If it lasts over 3 weeks, speak to a doctor.'],
+  [/diet|food|nutrition|weight|feeding/, 'Build meals around vegetables, protein, whole grains and healthy fats, drink water through the day, and limit sugary drinks. A dietitian can tailor this to any condition.'],
+  [/medicine|medication|tablet|dose|dosage/, 'Take medicines exactly as prescribed, at the same times each day, and do not change or stop doses on your own. A pharmacist can check interactions and timing for you.'],
+  [/exercise|fitness|workout|walk/, 'Start with 20–30 minutes of brisk walking most days plus two short strength sessions weekly, and increase gradually. Stop and seek advice if you get chest pain or unusual breathlessness.'],
+  [/dehydrat/, 'Signs include very dry mouth, no urine for 8+ hours (6+ in young children), sunken eyes, and unusual sleepiness. Offer small, frequent sips of oral rehydration solution and seek care if they cannot keep fluids down.'],
+  [/vaccin/, 'Vaccine schedules vary by country. Your pediatrician or local immunisation programme can give you the exact schedule and catch-up options for your child\'s age.'],
+  [/fall/, 'Clear walkways of clutter, use good lighting and non-slip footwear, add grab bars in the bathroom, and review medicines that cause drowsiness with your doctor.']
+];
+const DEFAULT_REPLY = 'I can help with that. Could you share a bit more: how long has this been going on, how severe is it, and are there any other symptoms? Add your API key in Settings for detailed, personalised answers.';
+
+const KEY = p => 'pulse_chat_' + p;
+const MAX_TURNS = 20;
+let busy = false, history = [], lastUserText = '';
+
+function md(text) {
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|\s)\*(?!\s)(.+?)\*/g, '$1<em>$2</em>');
+  let html = '', inList = false;
+  for (const raw of esc(text).split('\n')) {
+    const m = raw.match(/^\s*(?:[-*•]|\d+\.)\s+(.*)$/);
+    if (m) { if (!inList) { html += '<ul>'; inList = true; } html += '<li>' + inline(m[1]) + '</li>'; }
+    else { if (inList) { html += '</ul>'; inList = false; } if (raw.trim()) html += '<p>' + inline(raw) + '</p>'; }
+  }
+  return html + (inList ? '</ul>' : '');
+}
+const scrollChat = () => { const b = $('chatMessages'); b.scrollTop = b.scrollHeight; };
+
+function addUser(text) {
+  const d = document.createElement('div');
+  d.className = 'flex items-start gap-3 justify-end';
+  d.innerHTML = `<div class="pa-msg bg-teal-500 text-slate-950 p-4 rounded-2xl max-w-lg font-medium shadow-md whitespace-pre-wrap">${esc(text)}</div>`;
+  $('chatMessages').appendChild(d); scrollChat();
+}
+function addBot(text, error = false) {
+  const d = document.createElement('div');
+  d.className = 'flex items-start gap-3';
+  d.innerHTML = `
+    <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 border border-teal-500/30 font-bold text-xs">AI</div>
+    <div class="max-w-lg">
+      <div class="pa-msg bg-slate-100 dark:bg-slate-950 border ${error ? 'border-amber-400/60' : 'border-slate-200 dark:border-slate-800'} p-4 rounded-2xl text-slate-700 dark:text-slate-300 leading-relaxed">${md(text)}</div>
+      <div class="flex gap-3 mt-1.5 ml-1 text-[11px] text-slate-400">
+        <button class="pa-copy hover:text-teal-500"><i class="fa-regular fa-copy"></i> Copy</button>
+        <button class="pa-listen hover:text-teal-500"><i class="fa-solid fa-volume-high"></i> Listen</button>
+        ${error ? '<button class="pa-retry hover:text-teal-500"><i class="fa-solid fa-rotate-right"></i> Retry</button>' : ''}
+      </div>
+    </div>`;
+  d.querySelector('.pa-copy').onclick = e => { navigator.clipboard?.writeText(text); e.currentTarget.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; };
+  d.querySelector('.pa-listen').onclick = () => speakText(text.replace(/[*_]/g, ''));
+  const r = d.querySelector('.pa-retry');
+  if (r) r.onclick = () => { d.remove(); sendChat(lastUserText, true); };
+  $('chatMessages').appendChild(d); scrollChat();
+}
+function addEmergencyBanner() {
+  const d = document.createElement('div');
+  d.className = 'p-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 text-xs text-rose-700 dark:text-rose-300 flex items-center justify-between gap-3';
+  d.innerHTML = `<span><i class="fa-solid fa-triangle-exclamation mr-1"></i><strong>This may be an emergency.</strong> Do not wait for a chat reply. Call your local emergency number now.</span><button class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-xl shrink-0">SOS</button>`;
+  d.querySelector('button').onclick = triggerSOS;
+  $('chatMessages').appendChild(d); scrollChat();
+}
+function showTyping() {
+  const d = document.createElement('div');
+  d.id = 'paTyping'; d.className = 'flex items-start gap-3';
+  d.innerHTML = `<div class="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center shrink-0 border border-teal-500/30 font-bold text-xs text-teal-500 animate-pulse">AI</div><div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-3 rounded-2xl pa-dots"><span></span><span></span><span></span></div>`;
+  $('chatMessages').appendChild(d); scrollChat();
+}
+
+function saveHistory() { store.set(KEY(currentAgeProfile), JSON.stringify(history.slice(-MAX_TURNS * 2))); }
+function loadHistory() { try { history = JSON.parse(store.get(KEY(currentAgeProfile)) || '[]'); } catch (e) { history = []; } }
+
+function renderChips() {
+  $('paChips').innerHTML = PROFILES[currentAgeProfile].chips.map(c =>
+    `<button class="pa-chip text-xs px-3 py-1.5 rounded-full border border-teal-500/30 text-teal-600 dark:text-teal-300 bg-teal-500/5 hover:bg-teal-500/15 transition">${esc(c)}</button>`).join('');
+  $('paChips').querySelectorAll('button').forEach(b => b.onclick = () => sendChat(b.textContent));
+}
+function renderChat() {
+  $('chatMessages').innerHTML = '';
+  addBot(PROFILES[currentAgeProfile].greet);
+  history.forEach(h => h.role === 'user' ? addUser(h.text) : addBot(h.text));
+  renderChips();
+}
+
+function setAgeProfile(profile) {
+  currentAgeProfile = profile;
+  setOn('.profile-btn', document.querySelector(`.profile-btn[data-profile="${profile}"]`));
+  $('activeProfileTitle').innerText = 'Active Profile: ' + PROFILES[profile].label + ' Mode';
+  $('chatInput').placeholder = 'Ask a ' + PROFILES[profile].short + ' question...';
+  loadHistory(); renderChat();
+}
+
+function simulate(text) {
+  const hit = FALLBACK.find(([re]) => re.test(text.toLowerCase()));
+  return hit ? hit[1] : DEFAULT_REPLY;
+}
+
+async function sendChat(text, isRetry = false) {
+  text = (text || '').trim();
+  if (!text || busy) return;
+  busy = true; $('paSend').disabled = true; $('paSend').classList.add('opacity-60');
+  lastUserText = text;
+  if (!isRetry) { addUser(text); history.push({ role: 'user', text }); }
+  $('chatInput').value = '';
+  if (RED_FLAGS.test(text)) addEmergencyBanner();
+  showTyping();
+
+  let reply, failed = false;
+  if (geminiApiKey) {
+    try {
+      const system = `You are PulseAI, a health information assistant (not a doctor). ${PROFILES[currentAgeProfile].style} Keep replies under 150 words. Use short paragraphs or "-" bullets and **bold** for key points. Never diagnose with certainty. If something may be urgent, say so first. End with one brief follow-up question when useful. Reply in the same language the user writes in.`;
+      const contents = history.slice(-MAX_TURNS).map(h => ({ role: h.role, parts: [{ text: h.text }] }));
+      reply = await gemini(contents, system);
+    } catch (e) {
+      failed = true;
+      reply = e.name === 'AbortError' ? 'The request timed out. Please try again.' : `I couldn't reach Gemini: ${e.message}. Check your API key in Settings, then retry.`;
+    }
+  } else {
+    await new Promise(r => setTimeout(r, 600));
+    reply = simulate(text);
+  }
+
+  $('paTyping')?.remove();
+  addBot(reply, failed);
+  if (failed) history.pop();               // drop unanswered turn so Retry doesn't duplicate it
+  else { history.push({ role: 'model', text: reply }); saveHistory(); if (enableVoice) speakText(reply.replace(/[*_]/g, '')); }
+  busy = false; $('paSend').disabled = false; $('paSend').classList.remove('opacity-60');
+  $('chatInput').focus();
+}
+
+function initChatControls() {
+  $('paSend').onclick = () => sendChat($('chatInput').value);
+  $('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat($('chatInput').value); } });
+  $('paClear').onclick = () => { history = []; saveHistory(); renderChat(); };
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    const mic = $('paMic'); mic.classList.remove('hidden');
+    mic.onclick = () => {
+      const r = new SR(); r.lang = navigator.language || 'en-US';
+      mic.classList.add('text-rose-500', 'animate-pulse');
+      r.onresult = e => { $('chatInput').value = e.results[0][0].transcript; };
+      r.onend = () => { mic.classList.remove('text-rose-500', 'animate-pulse'); if ($('chatInput').value.trim()) sendChat($('chatInput').value); };
+      r.onerror = () => mic.classList.remove('text-rose-500', 'animate-pulse');
+      r.start();
+    };
+  }
+}
+
+/* ===================== SYMPTOM TRIAGE ===================== */
+async function analyzeCustomSymptom() {
+  const val = $('symptomInput').value.trim();
+  if (!val) return;
+  $('triageResult').classList.remove('hidden');
+  $('triageTitle').innerText = 'Analyzing...';
+  $('triageDesc').innerText = 'Evaluating risk factors...';
+  $('triageAction').innerHTML = '';
+  let out;
+  if (geminiApiKey) {
+    try {
+      out = await gemini([{ role: 'user', parts: [{ text: `Symptom triage for: "${val}". In 2 short sentences: first the urgency level (Low/Moderate/High) and main concern, then the immediate advice. Say to call emergency services if any red-flag signs are possible.` }] }],
+        'You are a cautious health triage assistant, not a doctor.', 300);
+    } catch (e) { out = null; }
+  }
+  if (!out) {
+    out = RED_FLAGS.test(val)
+      ? 'Triage Rating: HIGH URGENCY. These symptoms can signal an emergency. Call your local emergency number now.'
+      : 'Triage Rating: MODERATE ADVISORY. Rest, drink fluids, and track your symptoms. See a physician if they persist beyond 48 hours or get worse.';
+  }
+  $('triageTitle').innerText = 'Symptom Triage Analysis';
+  $('triageDesc').innerText = out;
+  $('triageAction').innerHTML = '💡 <strong>Next Steps:</strong> Find facilities in the Nearby Facilities tab or book a telehealth video consultation.';
+  if (enableVoice) speakText(out);
+}
+function checkSymptom(type) {
+  const R = {
+    chest: ['Triage Rating: HIGH URGENCY (Red Alert)', 'Chest tightness and shortness of breath can indicate acute cardiac or respiratory distress.', '🚨 <strong>Immediate Action:</strong> Call emergency services now. Do not drive yourself.'],
+    migraine: ['Triage Rating: MODERATE URGENCY (Yellow Alert)', 'Severe headaches with light sensitivity suggest migraine or raised blood pressure.', '⚠️ <strong>Recommended Action:</strong> Rest in a quiet dark room, hydrate, and see a physician if pain lasts beyond 4 hours.'],
+    joint: ['Triage Rating: LOW URGENCY (Green Advisory)', 'Mild musculoskeletal stiffness is usually from minor strain or sedentary posture.', '💡 <strong>Recommended Action:</strong> Try the gentle stretches in the Therapy Exercises tab and stay hydrated.']
+  }[type];
+  $('triageResult').classList.remove('hidden');
+  $('triageTitle').innerText = R[0]; $('triageDesc').innerText = R[1]; $('triageAction').innerHTML = R[2];
+}
+
+/* ===================== REPORT READER (demo) ===================== */
+function processReportUpload(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  demoReport('prescription', f.name);
+}
+function demoReport(type, fileName) {
+  $('reportResult').classList.remove('hidden'); $('reportResult').classList.add('flex');
+  const n = $('fileNameDisplay'); n.classList.remove('hidden');
+  n.innerText = 'Loaded: ' + (fileName ? fileName : type === 'prescription' ? 'sample_prescription.jpg' : 'sample_cbc_report.pdf') + (fileName ? ' (demo output shown)' : '');
+  if (type === 'prescription') {
+    $('reportTitle').innerText = 'Parsed Prescription (Sample)';
+    $('reportContent').innerHTML = `
+      <div class="box"><span class="font-bold text-teal-600 dark:text-teal-300 text-sm">1. Amoxicillin 500mg (Antibiotic)</span><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Take 1 capsule twice daily after meals for 5 days. Complete the full course.</p></div>
+      <div class="box"><span class="font-bold text-teal-600 dark:text-teal-300 text-sm">2. Paracetamol 650mg (Analgesic)</span><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Take 1 tablet every 6 hours only if temperature exceeds 38°C (100.4°F).</p></div>`;
+  } else {
+    $('reportTitle').innerText = 'Analyzed Lab Report: CBC (Sample)';
+    $('reportContent').innerHTML = `<div class="box"><span class="font-bold text-rose-600 dark:text-rose-400 text-sm">Hemoglobin: 10.2 g/dL (Below Normal Range)</span><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">May indicate mild anemia. Discuss iron-rich foods and further tests with your doctor.</p></div>`;
+  }
+}
+
+/* ===================== MEDICINES ===================== */
+const medDB = {
+  lipitor: { name: 'Lipitor (Atorvastatin)', usage: 'Lowers LDL cholesterol and reduces cardiovascular risk', dose: 'Typically 10–20mg once daily (as prescribed)', alt: 'Atorvastatin generics (e.g., Atorva, Storvas)', warning: 'Avoid large amounts of grapefruit juice.' },
+  augmentin: { name: 'Augmentin (Amoxicillin + Clavulanate)', usage: 'Broad-spectrum antibiotic for bacterial infections', dose: 'Commonly 625mg every 12 hours after food (as prescribed)', alt: 'Amoxicillin–clavulanate generics (e.g., Moxikind-CV, Clavam)', warning: 'Complete the full prescribed course.' },
+  metformin: { name: 'Metformin (Glucophage)', usage: 'Controls blood sugar in Type 2 diabetes', dose: 'Commonly 500mg twice daily with meals (as prescribed)', alt: 'Metformin generics (e.g., Glycomet)', warning: 'Report severe fatigue, muscle pain or vomiting to your doctor.' }
+};
+function searchMedicine() {
+  const q = $('medSearch').value.toLowerCase().trim();
+  const m = medDB[q] || {
+    name: q ? q.replace(/\b\w/g, c => c.toUpperCase()) : 'Paracetamol (Acetaminophen)',
+    usage: q ? 'No detailed entry in this demo database. Ask a pharmacist or check the leaflet.' : 'Analgesic and fever reducer for mild pain and fever',
+    dose: q ? 'Follow your prescriber or the product label' : 'Adults commonly 500–650mg every 4–6 hours; do not exceed 4g per day',
+    alt: q ? 'Ask your pharmacist for a generic with the same active ingredient' : 'Generic acetaminophen / paracetamol',
+    warning: 'Do not exceed the recommended daily dose; check other medicines for hidden paracetamol.'
+  };
+  $('medResults').innerHTML = `
+    <div class="card p-6 md:col-span-2">
+      <div class="flex justify-between items-start mb-3">
+        <h4 class="font-bold text-teal-600 dark:text-teal-400 text-lg">${esc(m.name)}</h4>
+        <span class="tag bg-teal-500/10 text-teal-600 dark:text-teal-300 border-teal-500/20">Reference Info</span>
+      </div>
+      <p class="text-xs text-slate-700 dark:text-slate-300 mb-2"><strong>Primary Indication:</strong> ${esc(m.usage)}</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4"><strong>Typical Dosage:</strong> ${esc(m.dose)}</p>
+      <div class="grid md:grid-cols-2 gap-4 mt-4">
+        <div class="p-4 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900/50 rounded-2xl text-xs text-teal-700 dark:text-teal-300">💡 <strong>Generic Alternative:</strong><br>${esc(m.alt)}</div>
+        <div class="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl text-xs text-amber-700 dark:text-amber-300">⚠️ <strong>Safety Note:</strong><br>${esc(m.warning)}</div>
+      </div>
+    </div>`;
+}
+
+/* ===================== EXERCISES ===================== */
+const exercises = {
+  back: [
+    { name: 'Cat-Cow Spinal Mobilization', reps: '2 sets × 10 reps', time: '3 mins', desc: 'Gently flexes and extends the spine to ease lower back stiffness.' },
+    { name: 'Child’s Pose Stretch', reps: 'Hold 30 secs × 3 sets', time: '2 mins', desc: 'Decompresses the lumbar spine and stretches the lower back muscles.' }
+  ],
+  posture: [
+    { name: 'Doorway Pectoral Stretch', reps: 'Hold 30 secs × 3 reps', time: '3 mins', desc: 'Counters rounded shoulders and forward head posture from desk work.' },
+    { name: 'Scapular Wall Slides', reps: '3 sets × 12 reps', time: '4 mins', desc: 'Activates upper and mid back muscles to improve alignment.' }
+  ],
+  knee: [{ name: 'Seated Straight Leg Raises', reps: '3 sets × 12 reps per leg', time: '5 mins', desc: 'Strengthens the quadriceps without loading the knee joint.' }],
+  neck: [{ name: 'Upper Trapezius Side Stretch', reps: 'Hold 25 secs per side', time: '3 mins', desc: 'Relieves neck and shoulder tension built up from screen time.' }]
+};
+function filterExercise(cat, btn) {
+  if (btn) setOn('.ex-btn', btn);
+  $('exerciseCards').innerHTML = (exercises[cat] || []).map(e => `
+    <div class="card p-6 flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-start mb-2">
+          <h4 class="font-bold text-base">${e.name}</h4>
+          <span class="tag bg-slate-100 dark:bg-slate-800 text-teal-600 dark:text-teal-400 border-slate-200 dark:border-slate-700"><i class="fa-regular fa-clock mr-1"></i>${e.time}</span>
+        </div>
+        <span class="text-xs text-teal-600 dark:text-teal-400 font-semibold block mb-2">${e.reps}</span>
+        <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">${e.desc}</p>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-shield-heart text-teal-500 mr-1"></i> Low-impact. Stop if pain increases.</div>
+    </div>`).join('');
+}
+
+/* ===================== HOSPITALS (sample data) ===================== */
+const hospitals = [
+  { type: 'government', name: 'Central District Civil Hospital', typeLabel: 'Government / Public', dist: '1.2 km away', phone: '+1-800-555-0199', services: '24/7 Emergency, Trauma Care, General Surgery' },
+  { type: 'government', name: 'Municipal Public Health Clinic #4', typeLabel: 'Government / Public', dist: '2.8 km away', phone: '+1-800-555-0182', services: 'Vaccinations, Primary Care, Pediatrics' },
+  { type: 'private', name: 'Apollo Super Speciality Medical Center', typeLabel: 'Private', dist: '3.5 km away', phone: '+1-800-555-0144', services: 'Cardiology, Advanced Diagnostics, ICU' },
+  { type: 'private', name: 'Metro Healthcare & Diagnostic Clinic', typeLabel: 'Private', dist: '4.1 km away', phone: '+1-800-555-0177', services: 'Orthopedics, Physiotherapy, Pharmacy' }
+];
+function filterHospitals(type, btn) {
+  if (btn) setOn('.hosp-btn', btn);
+  $('hospitalList').innerHTML = hospitals.filter(h => type === 'all' || h.type === type).map(h => `
+    <div class="card p-6 flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-start mb-2">
+          <span class="tag ${h.type === 'government' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'}">${h.typeLabel}</span>
+          <span class="text-xs text-slate-500 dark:text-slate-400"><i class="fa-solid fa-location-dot text-teal-500 mr-1"></i>${h.dist}</span>
+        </div>
+        <h4 class="font-bold text-base mt-2">${h.name}</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${h.services}</p>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <span class="text-[11px] text-slate-400">Sample listing</span>
+        <a href="tel:${h.phone}" class="btn-ghost px-4 py-2.5 text-xs font-semibold border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 text-teal-600 dark:text-teal-300"><i class="fa-solid fa-phone"></i> Call Facility</a>
+      </div>
+    </div>`).join('');
+}
+
+/* ===================== TELEHEALTH ===================== */
+let localStream = null;
+function startCall(doctor) {
+  $('videoPlaceholder').classList.add('hidden');
+  $('remoteStream').classList.remove('hidden'); $('remoteStream').classList.add('flex');
+  $('localVideo').classList.remove('hidden');
+  $('callingText').innerText = `Connecting to ${doctor}...`;
+  const done = txt => setTimeout(() => { $('callingText').innerText = txt; }, 1500);
+  if (!navigator.mediaDevices?.getUserMedia) return done(`Demo session with ${doctor}`);
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(s => { localStream?.getTracks().forEach(t => t.stop()); localStream = s; $('localVideo').srcObject = s; done(`Demo session with ${doctor}`); })
+    .catch(() => done(`Demo session with ${doctor} (camera unavailable)`));
+}
+function endCall() {
+  localStream?.getTracks().forEach(t => t.stop()); localStream = null;
+  $('localVideo').srcObject = null; $('localVideo').classList.add('hidden');
+  $('remoteStream').classList.add('hidden'); $('remoteStream').classList.remove('flex');
+  $('videoPlaceholder').classList.remove('hidden');
+}
+
+/* ===================== INIT ===================== */
+document.addEventListener('DOMContentLoaded', () => {
+  if (geminiApiKey) $('apiKeyInput').value = geminiApiKey;
+  $('voiceToggle').checked = enableVoice;
+  updateApiStatusUI();
+  initChatControls();
+  setAgeProfile('pediatric');
+  filterExercise('back'); filterHospitals('all'); searchMedicine();
+});
+</script>
+</body>
+</html>
